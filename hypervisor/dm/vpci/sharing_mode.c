@@ -38,12 +38,27 @@ struct pci_vdev *sharing_mode_find_vdev(union pci_bdf pbdf)
 	struct pci_vdev *vdev = NULL;
 	uint32_t i;
 
+        pr_fatal("num_pci_vdev: %i", num_pci_vdev);
+        pr_fatal("BDF 0x%04x", pbdf);
 	/* in SOS_VM, it uses phys BDF */
 	for (i = 0U; i < num_pci_vdev; i++) {
-		if (sharing_mode_vdev_array[i].pdev->bdf.value == pbdf.value) {
-			vdev = &sharing_mode_vdev_array[i];
-		}
+                pr_fatal("\nChecking vpci index %i", i);
+                if (sharing_mode_vdev_array[i].pdev != NULL ) {
+	                pr_fatal("PDEV in question: 0x%x", sharing_mode_vdev_array[i].pdev);
+	                pr_fatal("PBDF on index: 0x%04x", sharing_mode_vdev_array[i].pbdf);
+	                pr_fatal("VBDF on index: 0x%04x", sharing_mode_vdev_array[i].vbdf);
+
+			if (sharing_mode_vdev_array[i].pdev->bdf.value == pbdf.value) {
+				vdev = &sharing_mode_vdev_array[i];
+				pr_fatal("Found device matching device: 0x%x", vdev);
+			} else {
+				pr_fatal("No match on this index");
+                        }
+		} else {
+			pr_fatal("PDEV in vdev array at index %i is NULL", i);
+                }
 	}
+        pr_fatal("Done searching\n");
 
 	return vdev;
 }
@@ -55,12 +70,15 @@ static void sharing_mode_cfgread(__unused struct acrn_vpci *vpci, union pci_bdf 
 	bool handled = false;
 	uint32_t i;
 
+        pr_fatal("Attempt find vdev from bdf");
 	vdev = sharing_mode_find_vdev(bdf);
 
 	/* vdev == NULL: Could be hit for PCI enumeration from guests */
 	if ((vdev == NULL) || ((bytes != 1U) && (bytes != 2U) && (bytes != 4U))) {
+                pr_fatal("VDEV == NUll or bit 1 2 and 3 are not all set in bytes");
 		*val = ~0U;
 	} else {
+                pr_fatal("Found VDEV, proceeding with reading ops...");
 		for (i = 0U; (i < vdev->nr_ops) && !handled; i++) {
 			if (vdev->ops[i].cfgread != NULL) {
 				if (vdev->ops[i].cfgread(vdev, offset, bytes, val) == 0) {
@@ -107,7 +125,9 @@ static struct pci_vdev *alloc_pci_vdev(const struct acrn_vm *vm, struct pci_pdev
 	struct pci_vdev *vdev = NULL;
 
 	if (num_pci_vdev < CONFIG_MAX_PCI_DEV_NUM) {
+	        pr_fatal("\nAllocating vdev %i, vm: 0x%x pdev_ref: 0x%x", num_pci_vdev, vm, pdev_ref);
 		vdev = &sharing_mode_vdev_array[num_pci_vdev];
+                pr_fatal("vdev ptr %x", vdev);
 		num_pci_vdev++;
 
 		if ((vm != NULL) && (vdev != NULL) && (pdev_ref != NULL)) {
@@ -115,7 +135,10 @@ static struct pci_vdev *alloc_pci_vdev(const struct acrn_vm *vm, struct pci_pdev
 			/* vbdf equals to pbdf otherwise remapped */
 			vdev->vbdf = pdev_ref->bdf;
 			vdev->pdev = pdev_ref;
-		}
+                        pr_fatal("Allocation DONE! vpci: 0x%x    bdf: 0x%04x", vdev->vpci, vdev->vbdf);
+		} else {
+			pr_fatal("FAILED ALLOC at index %i", num_pci_vdev - 1);
+                }
 	}
 
 	return vdev;
@@ -150,11 +173,14 @@ static int32_t sharing_mode_vpci_init(const struct acrn_vm *vm)
 
 		for (i = 0U; i < num_pci_vdev; i++) {
 			vdev = &sharing_mode_vdev_array[i];
+                        pr_fatal("\nInit ops for vdev idx %d", i);
+                        pr_fatal("Before ops init:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", vdev->vpci, vdev->vbdf, vdev->pdev);
 			for (j = 0U; j < vdev->nr_ops; j++) {
 				if (vdev->ops[j].init != NULL) {
 					(void)vdev->ops[j].init(vdev);
 				}
 			}
+                        pr_fatal("After ops init:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", vdev->vpci, vdev->vbdf, vdev->pdev);
 		}
 		ret = 0;
 	}
@@ -167,6 +193,7 @@ static void sharing_mode_vpci_deinit(__unused const struct acrn_vm *vm)
 	struct pci_vdev *vdev;
 	uint32_t i, j;
 
+	pr_fatal("sharing_mode_vpci_deinit, vm: 0x%x", vm);
 	if (is_sos_vm(vm)) {
 		for (i = 0U; i < num_pci_vdev; i++) {
 			vdev = &sharing_mode_vdev_array[i];
