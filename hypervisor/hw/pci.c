@@ -165,6 +165,7 @@ void init_pci_pdev_list(void)
 					continue;
 				}
 
+                                pr_fatal("Init pdev: vendor: 0x%x   bdf 0x%04x", val, pbdf);
 				init_pdev(pbdf.value);
 
 				hdr_type = (uint8_t)pci_pdev_read_cfg(pbdf, PCIR_HDRTYPE, 1U);
@@ -294,6 +295,7 @@ static uint8_t pci_pdev_read_bar(union pci_bdf bdf, uint8_t idx, struct pci_bar 
 	bar->base = base;
 	bar->size = size;
 	bar->type = type;
+        pr_fatal("bdf 0x%04x    idx %d    base %ld    size %ld    type %d", bdf, idx, bar->base, bar->size, bar->type);
 
 	return (type == PCIBAR_MEM64)?2U:1U;
 }
@@ -377,7 +379,13 @@ static void fill_pdev(uint16_t pbdf, struct pci_pdev *pdev)
 
 	if ((pci_pdev_read_cfg(pdev->bdf, PCIR_STATUS, 2U) & PCIM_STATUS_CAPPRESENT) != 0U) {
 		pci_read_cap(pdev);
+		pr_fatal("fill_pdev: READ SUCCESSFULL\n");
 	}
+
+	pr_fatal("fill_pdev bdf: 0x%04x\n", pbdf);
+	pr_fatal("fill_pdev bar0: 0x%x\n", pdev->bar[0]);
+	pr_fatal("fill_pdev hdr_type: %i\n", hdr_type);
+	pr_fatal("fill_pdev nr_bars: %i\n", nr_bars);
 }
 
 static void init_pdev(uint16_t pbdf)
