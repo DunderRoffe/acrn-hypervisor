@@ -190,25 +190,26 @@ void populate_msi_struct(struct pci_vdev *vdev)
 	pr_fatal("Enter populate_msi_struct    vpci: 0x%x    bdf: 0x%04x", vdev->vpci, vdev->vbdf);
 
 	/* Copy MSI/MSI-X capability struct into virtual device */
-	if (pdev->msi.capoff != 0U) {
-		vdev->msi.capoff = pdev->msi.capoff;
-		vdev->msi.caplen = pdev->msi.caplen;
-		pr_fatal("pdev->msi.capoff %d", pdev->msi.capoff);
-		pr_fatal("pdev->msi.caplen %d", pdev->msi.caplen);
+    // if (pdev->msi.capoff != 0U) {
+    //     vdev->msi.capoff = pdev->msi.capoff;
+    //     vdev->msi.caplen = pdev->msi.caplen;
+    //     pr_fatal("pdev->msi.capoff %d", pdev->msi.capoff);
+    //     pr_fatal("pdev->msi.caplen %d", pdev->msi.caplen);
 
-		/* Assign MSI handler for configuration read and write */
-		add_vdev_handler(vdev, &pci_ops_vdev_msi);
+    //     /* Assign MSI handler for configuration read and write */
+    //     add_vdev_handler(vdev, &pci_ops_vdev_msi);
 
-		(void)memcpy_s((void *)&vdev->cfgdata.data_8[pdev->msi.capoff], pdev->msi.caplen,
-			(void *)&pdev->msi.cap[0U], pdev->msi.caplen);
+    //     (void)memcpy_s((void *)&vdev->cfgdata.data_8[pdev->msi.capoff], pdev->msi.caplen,
+    //         (void *)&pdev->msi.cap[0U], pdev->msi.caplen);
 
-		val = buf_read32(&pdev->msi.cap[0U]);
-		val &= ~((uint32_t)PCIM_MSICTRL_MMC_MASK << 16U);
-		val &= ~((uint32_t)PCIM_MSICTRL_MME_MASK << 16U);
+    //     val = buf_read32(&pdev->msi.cap[0U]);
+    //     val &= ~((uint32_t)PCIM_MSICTRL_MMC_MASK << 16U);
+    //     val &= ~((uint32_t)PCIM_MSICTRL_MME_MASK << 16U);
 
-		buf_write32(&vdev->cfgdata.data_8[pdev->msi.capoff], val);
-	}
-	pr_fatal("After MSI in populate_msi_struct    vpci: 0x%x    bdf: 0x%04x", vdev->vpci, vdev->vbdf);
+    //     buf_write32(&vdev->cfgdata.data_8[pdev->msi.capoff], val);
+    // }
+    // pr_fatal("After MSI in populate_msi_struct    vpci: 0x%x    bdf: 0x%04x", vdev->vpci, vdev->vbdf);
+
 
 	if (pdev->msix.capoff != 0U) {
 		vdev->msix.capoff = pdev->msix.capoff;
