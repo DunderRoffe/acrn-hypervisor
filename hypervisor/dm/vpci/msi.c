@@ -43,150 +43,150 @@ static inline bool msicap_access(const struct pci_vdev *vdev, uint32_t offset)
 	return ret;
 }
 
-static int32_t vmsi_remap(const struct pci_vdev *vdev, bool enable)
-{
-	struct ptirq_msi_info info;
-	union pci_bdf pbdf = vdev->pdev->bdf;
-	struct acrn_vm *vm = vdev->vpci->vm;
-	uint32_t capoff = vdev->msi.capoff;
-	uint32_t msgctrl, msgdata;
-	uint32_t addrlo, addrhi;
-	int32_t ret;
+//static int32_t vmsi_remap(const struct pci_vdev *vdev, bool enable)
+//{
+//    struct ptirq_msi_info info;
+//    union pci_bdf pbdf = vdev->pdev->bdf;
+//    struct acrn_vm *vm = vdev->vpci->vm;
+//    uint32_t capoff = vdev->msi.capoff;
+//    uint32_t msgctrl, msgdata;
+//    uint32_t addrlo, addrhi;
+//    int32_t ret;
+//
+//    /* Disable MSI during configuration */
+//    msgctrl = pci_vdev_read_cfg(vdev, capoff + PCIR_MSI_CTRL, 2U);
+//    if ((msgctrl & PCIM_MSICTRL_MSI_ENABLE) == PCIM_MSICTRL_MSI_ENABLE) {
+//        pci_pdev_write_cfg(pbdf, capoff + PCIR_MSI_CTRL, 2U, msgctrl & ~PCIM_MSICTRL_MSI_ENABLE);
+//    }
+//
+//    /* Read the MSI capability structure from virtual device */
+//    addrlo = pci_vdev_read_cfg_u32(vdev, capoff + PCIR_MSI_ADDR);
+//    if ((msgctrl & PCIM_MSICTRL_64BIT) != 0U) {
+//        msgdata = pci_vdev_read_cfg_u16(vdev, capoff + PCIR_MSI_DATA_64BIT);
+//        addrhi = pci_vdev_read_cfg_u32(vdev, capoff + PCIR_MSI_ADDR_HIGH);
+//    } else {
+//        msgdata = pci_vdev_read_cfg_u16(vdev, capoff + PCIR_MSI_DATA);
+//        addrhi = 0U;
+//    }
+//
+//    info.is_msix = 0;
+//    info.vmsi_addr.full = (uint64_t)addrlo | ((uint64_t)addrhi << 32U);
+//
+//    /* MSI is being enabled or disabled */
+//    if (enable) {
+//        info.vmsi_data.full = msgdata;
+//    } else {
+//        info.vmsi_data.full = 0U;
+//    }
+//
+//    ret = ptirq_msix_remap(vm, vdev->vbdf.value, 0U, &info);
+//    if (ret == 0) {
+//        /* Update MSI Capability structure to physical device */
+//        pci_pdev_write_cfg(pbdf, capoff + PCIR_MSI_ADDR, 0x4U, (uint32_t)info.pmsi_addr.full);
+//        if ((msgctrl & PCIM_MSICTRL_64BIT) != 0U) {
+//            pci_pdev_write_cfg(pbdf, capoff + PCIR_MSI_ADDR_HIGH, 0x4U,
+//                (uint32_t)(info.pmsi_addr.full >> 32U));
+//            pci_pdev_write_cfg(pbdf, capoff + PCIR_MSI_DATA_64BIT, 0x2U, (uint16_t)info.pmsi_data.full);
+//        } else {
+//            pci_pdev_write_cfg(pbdf, capoff + PCIR_MSI_DATA, 0x2U, (uint16_t)info.pmsi_data.full);
+//        }
+//
+//        /* If MSI Enable is being set, make sure INTxDIS bit is set */
+//        if (enable) {
+//            enable_disable_pci_intx(pbdf, false);
+//            pci_pdev_write_cfg(pbdf, capoff + PCIR_MSI_CTRL, 2U, msgctrl | PCIM_MSICTRL_MSI_ENABLE);
+//        }
+//    }
+//
+//    return ret;
+//}
 
-	/* Disable MSI during configuration */
-	msgctrl = pci_vdev_read_cfg(vdev, capoff + PCIR_MSI_CTRL, 2U);
-	if ((msgctrl & PCIM_MSICTRL_MSI_ENABLE) == PCIM_MSICTRL_MSI_ENABLE) {
-		pci_pdev_write_cfg(pbdf, capoff + PCIR_MSI_CTRL, 2U, msgctrl & ~PCIM_MSICTRL_MSI_ENABLE);
-	}
+//static int32_t vmsi_cfgread(const struct pci_vdev *vdev, uint32_t offset, uint32_t bytes, uint32_t *val)
+//{
+//    int32_t ret;
+//    /* For PIO access, we emulate Capability Structures only */
+//    if (msicap_access(vdev, offset)) {
+//        *val = pci_vdev_read_cfg(vdev, offset, bytes);
+//        ret = 0;
+//    } else {
+//        ret = -ENODEV;
+//    }
+//
+//    return ret;
+//}
+//
+//static int32_t vmsi_cfgwrite(struct pci_vdev *vdev, uint32_t offset, uint32_t bytes, uint32_t val)
+//{
+//    bool message_changed = false;
+//    bool enable;
+//    uint32_t msgctrl;
+//    int32_t ret = -ENODEV;
+//
+//    /* Writing MSI Capability Structure */
+//    if (msicap_access(vdev, offset)) {
+//
+//        /* Save msgctrl for comparison */
+//        msgctrl = pci_vdev_read_cfg(vdev, vdev->msi.capoff + PCIR_MSI_CTRL, 2U);
+//
+//        /* Either Message Data or message Addr is being changed */
+//        if (((offset - vdev->msi.capoff) >= PCIR_MSI_ADDR) && (val != pci_vdev_read_cfg(vdev, offset, bytes))) {
+//            message_changed = true;
+//        }
+//
+//        /* Write to vdev */
+//        pci_vdev_write_cfg(vdev, offset, bytes, val);
+//
+//        /* Do remap if MSI Enable bit is being changed */
+//        if (((offset - vdev->msi.capoff) == PCIR_MSI_CTRL) &&
+//            (((msgctrl ^ val) & PCIM_MSICTRL_MSI_ENABLE) != 0U)) {
+//            enable = ((val & PCIM_MSICTRL_MSI_ENABLE) != 0U);
+//            (void)vmsi_remap(vdev, enable);
+//        } else {
+//            if (message_changed && ((msgctrl & PCIM_MSICTRL_MSI_ENABLE) != 0U)) {
+//                (void)vmsi_remap(vdev, true);
+//            }
+//        }
+//
+//        ret = 0;
+//    }
 
-	/* Read the MSI capability structure from virtual device */
-	addrlo = pci_vdev_read_cfg_u32(vdev, capoff + PCIR_MSI_ADDR);
-	if ((msgctrl & PCIM_MSICTRL_64BIT) != 0U) {
-		msgdata = pci_vdev_read_cfg_u16(vdev, capoff + PCIR_MSI_DATA_64BIT);
-		addrhi = pci_vdev_read_cfg_u32(vdev, capoff + PCIR_MSI_ADDR_HIGH);
-	} else {
-		msgdata = pci_vdev_read_cfg_u16(vdev, capoff + PCIR_MSI_DATA);
-		addrhi = 0U;
-	}
+//	return ret;
+//}
 
-	info.is_msix = 0;
-	info.vmsi_addr.full = (uint64_t)addrlo | ((uint64_t)addrhi << 32U);
+//static int32_t vmsi_deinit(struct pci_vdev *vdev)
+//{
+//	if (vdev->msi.capoff != 0U) {
+//		ptirq_remove_msix_remapping(vdev->vpci->vm, vdev->vbdf.value, 1U);
+//	}
+//
+//	return 0;
+//}
 
-	/* MSI is being enabled or disabled */
-	if (enable) {
-		info.vmsi_data.full = msgdata;
-	} else {
-		info.vmsi_data.full = 0U;
-	}
-
-	ret = ptirq_msix_remap(vm, vdev->vbdf.value, 0U, &info);
-	if (ret == 0) {
-		/* Update MSI Capability structure to physical device */
-		pci_pdev_write_cfg(pbdf, capoff + PCIR_MSI_ADDR, 0x4U, (uint32_t)info.pmsi_addr.full);
-		if ((msgctrl & PCIM_MSICTRL_64BIT) != 0U) {
-			pci_pdev_write_cfg(pbdf, capoff + PCIR_MSI_ADDR_HIGH, 0x4U,
-				(uint32_t)(info.pmsi_addr.full >> 32U));
-			pci_pdev_write_cfg(pbdf, capoff + PCIR_MSI_DATA_64BIT, 0x2U, (uint16_t)info.pmsi_data.full);
-		} else {
-			pci_pdev_write_cfg(pbdf, capoff + PCIR_MSI_DATA, 0x2U, (uint16_t)info.pmsi_data.full);
-		}
-
-		/* If MSI Enable is being set, make sure INTxDIS bit is set */
-		if (enable) {
-			enable_disable_pci_intx(pbdf, false);
-			pci_pdev_write_cfg(pbdf, capoff + PCIR_MSI_CTRL, 2U, msgctrl | PCIM_MSICTRL_MSI_ENABLE);
-		}
-	}
-
-	return ret;
-}
-
-static int32_t vmsi_cfgread(const struct pci_vdev *vdev, uint32_t offset, uint32_t bytes, uint32_t *val)
-{
-	int32_t ret;
-	/* For PIO access, we emulate Capability Structures only */
-	if (msicap_access(vdev, offset)) {
-		*val = pci_vdev_read_cfg(vdev, offset, bytes);
-	    ret = 0;
-	} else {
-		ret = -ENODEV;
-	}
-
-	return ret;
-}
-
-static int32_t vmsi_cfgwrite(struct pci_vdev *vdev, uint32_t offset, uint32_t bytes, uint32_t val)
-{
-	bool message_changed = false;
-	bool enable;
-	uint32_t msgctrl;
-	int32_t ret = -ENODEV;
-
-	/* Writing MSI Capability Structure */
-	if (msicap_access(vdev, offset)) {
-
-		/* Save msgctrl for comparison */
-		msgctrl = pci_vdev_read_cfg(vdev, vdev->msi.capoff + PCIR_MSI_CTRL, 2U);
-
-		/* Either Message Data or message Addr is being changed */
-		if (((offset - vdev->msi.capoff) >= PCIR_MSI_ADDR) && (val != pci_vdev_read_cfg(vdev, offset, bytes))) {
-			message_changed = true;
-		}
-
-		/* Write to vdev */
-		pci_vdev_write_cfg(vdev, offset, bytes, val);
-
-		/* Do remap if MSI Enable bit is being changed */
-		if (((offset - vdev->msi.capoff) == PCIR_MSI_CTRL) &&
-			(((msgctrl ^ val) & PCIM_MSICTRL_MSI_ENABLE) != 0U)) {
-			enable = ((val & PCIM_MSICTRL_MSI_ENABLE) != 0U);
-			(void)vmsi_remap(vdev, enable);
-		} else {
-			if (message_changed && ((msgctrl & PCIM_MSICTRL_MSI_ENABLE) != 0U)) {
-				(void)vmsi_remap(vdev, true);
-			}
-		}
-
-		ret = 0;
-	}
-
-	return ret;
-}
-
-static int32_t vmsi_deinit(struct pci_vdev *vdev)
-{
-	if (vdev->msi.capoff != 0U) {
-		ptirq_remove_msix_remapping(vdev->vpci->vm, vdev->vbdf.value, 1U);
-	}
-
-	return 0;
-}
-
-static const struct pci_vdev_ops pci_ops_vdev_msi = {
-	.deinit = vmsi_deinit,
-	.cfgwrite = vmsi_cfgwrite,
-	.cfgread = vmsi_cfgread,
-};
+//static const struct pci_vdev_ops pci_ops_vdev_msi = {
+//	.deinit = vmsi_deinit,
+//	.cfgwrite = vmsi_cfgwrite,
+//	.cfgread = vmsi_cfgread,
+//};
 
 /* Read a uint32_t from buffer (little endian) */
-static uint32_t buf_read32(const uint8_t buf[])
-{
-	return buf[0] | ((uint32_t)buf[1] << 8U) | ((uint32_t)buf[2] << 16U) | ((uint32_t)buf[3] << 24U);
-}
+//static uint32_t buf_read32(const uint8_t buf[])
+//{
+//	return buf[0] | ((uint32_t)buf[1] << 8U) | ((uint32_t)buf[2] << 16U) | ((uint32_t)buf[3] << 24U);
+//}
 
 /* Write a uint32_t to buffer (little endian) */
-static void buf_write32(uint8_t buf[], uint32_t val)
-{
-	buf[0] = (uint8_t)(val & 0xFFU);
-	buf[1] = (uint8_t)((val >> 8U)  & 0xFFU);
-	buf[2] = (uint8_t)((val >> 16U) & 0xFFU);
-	buf[3] = (uint8_t)((val >> 24U) & 0xFFU);
-}
+//static void buf_write32(uint8_t buf[], uint32_t val)
+//{
+//    buf[0] = (uint8_t)(val & 0xFFU);
+//    buf[1] = (uint8_t)((val >> 8U)  & 0xFFU);
+//    buf[2] = (uint8_t)((val >> 16U) & 0xFFU);
+//    buf[3] = (uint8_t)((val >> 24U) & 0xFFU);
+//}
 
 void populate_msi_struct(struct pci_vdev *vdev)
 {
 	struct pci_pdev *pdev = vdev->pdev;
-	uint32_t val;
+	//uint32_t val;
 	pr_fatal("Enter populate_msi_struct    vpci: 0x%x    bdf: 0x%04x", vdev->vpci, vdev->vbdf);
 
 	/* Copy MSI/MSI-X capability struct into virtual device */
