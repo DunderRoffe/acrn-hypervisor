@@ -72,7 +72,7 @@ endif
 CFLAGS += -DSTACK_PROTECTOR
 endif
 
-CFLAGS += -O0
+CFLAGS += -O1
 
 ASFLAGS += -m64 -nostdinc -nostdlib
 
