@@ -72,6 +72,8 @@ endif
 CFLAGS += -DSTACK_PROTECTOR
 endif
 
+CFLAGS += -O0
+
 ASFLAGS += -m64 -nostdinc -nostdlib
 
 LDFLAGS += -Wl,--gc-sections -nostartfiles -nostdlib
