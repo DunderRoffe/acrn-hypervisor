@@ -74,8 +74,6 @@ static uint32_t pci_cfgdata_io_read(struct acrn_vm *vm, uint16_t addr, size_t by
 	uint16_t offset = addr - PCI_CONFIG_DATA;
 	uint32_t val = ~0U;
 
-	pr_fatal("pi->cached_enabled %hu\n", pi->cached_enable?1:0);
-        pr_fatal("pi->cached_bdf 0x%04x\n", pi->cached_bdf);
 	if (pi->cached_enable) {
 		if ((vpci->ops != NULL) && (vpci->ops->cfgread != NULL)) {
 			vpci->ops->cfgread(vpci, pi->cached_bdf, pi->cached_reg + offset, bytes, &val);
