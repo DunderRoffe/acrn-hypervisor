@@ -151,7 +151,7 @@ static void init_vdev_for_pdev(struct pci_pdev *pdev, const void *cb_data)
 
 	vdev = alloc_pci_vdev(vm, pdev);
 	if (vdev != NULL) {
-		populate_msi_struct(vdev);
+		//populate_msi_struct(vdev);
 	}
 	pr_fatal("After call to populate_msi_struct    vpci: 0x%x    bdf: 0x%04x", vdev->vpci, vdev->vbdf);
 }
