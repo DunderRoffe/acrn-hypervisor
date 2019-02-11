@@ -211,18 +211,18 @@ void populate_msi_struct(struct pci_vdev *vdev)
     pr_fatal("After MSI in populate_msi_struct    vpci: 0x%x    bdf: 0x%04x", vdev->vpci, vdev->vbdf);
 
 
-    //  if (pdev->msix.capoff != 0U) {
-    //      vdev->msix.capoff = pdev->msix.capoff;
-    //      vdev->msix.caplen = pdev->msix.caplen;
-    //      pr_fatal("pdev->msix.capoff %d", pdev->msix.capoff);
-    //      pr_fatal("pdev->msix.caplen %d", pdev->msix.caplen);
+    if (pdev->msix.capoff != 0U) {
+        vdev->msix.capoff = pdev->msix.capoff;
+        vdev->msix.caplen = pdev->msix.caplen;
+        pr_fatal("pdev->msix.capoff %d", pdev->msix.capoff);
+        pr_fatal("pdev->msix.caplen %d", pdev->msix.caplen);
 
-    //      /* Assign MSI-X handler for configuration read and write */
-    //      add_vdev_handler(vdev, &pci_ops_vdev_msix);
+        /* Assign MSI-X handler for configuration read and write */
+        add_vdev_handler(vdev, &pci_ops_vdev_msix);
 
-    //      (void)memcpy_s((void *)&vdev->cfgdata.data_8[pdev->msix.capoff], pdev->msix.caplen,
-    //          (void *)&pdev->msix.cap[0U], pdev->msix.caplen);
-    //  }
-    //  pr_fatal("After MSI-X in populate_msi_struct    vpci: 0x%x    bdf: 0x%04x", vdev->vpci, vdev->vbdf);
+        (void)memcpy_s((void *)&vdev->cfgdata.data_8[pdev->msix.capoff], pdev->msix.caplen,
+            (void *)&pdev->msix.cap[0U], pdev->msix.caplen);
+    }
+    pr_fatal("After MSI-X in populate_msi_struct    vpci: 0x%x    bdf: 0x%04x", vdev->vpci, vdev->vbdf);
 }
 
