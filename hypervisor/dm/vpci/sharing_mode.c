@@ -153,6 +153,7 @@ static void init_vdev_for_pdev(struct pci_pdev *pdev, const void *cb_data)
 	if (vdev != NULL) {
 		populate_msi_struct(vdev);
 	}
+	pr_fatal("After call to populate_msi_struct    vpci: 0x%x    bdf: 0x%04x", vdev->vpci, vdev->vbdf);
 }
 
 static int32_t sharing_mode_vpci_init(const struct acrn_vm *vm)
@@ -173,14 +174,14 @@ static int32_t sharing_mode_vpci_init(const struct acrn_vm *vm)
 
 		for (i = 0U; i < num_pci_vdev; i++) {
 			vdev = &sharing_mode_vdev_array[i];
-                        pr_fatal("\nInit ops for vdev idx %d", i);
-                        pr_fatal("Before ops init:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", vdev->vpci, vdev->vbdf, vdev->pdev);
+			pr_fatal("\nInit ops for vdev idx %d", i);
+			pr_fatal("Before ops init:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", vdev->vpci, vdev->vbdf, vdev->pdev);
 			for (j = 0U; j < vdev->nr_ops; j++) {
 				if (vdev->ops[j].init != NULL) {
 					(void)vdev->ops[j].init(vdev);
 				}
 			}
-                        pr_fatal("After ops init:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", vdev->vpci, vdev->vbdf, vdev->pdev);
+			pr_fatal("After ops init:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", vdev->vpci, vdev->vbdf, vdev->pdev);
 		}
 		ret = 0;
 	}
