@@ -33,14 +33,12 @@
 static inline bool msixcap_access(const struct pci_vdev *vdev, uint32_t offset)
 {
 	bool ret;
-	pr_fatal("Enter %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 
 	if (vdev->msix.capoff == 0U) {
 		ret = false;
 	} else {
 		ret = in_range(offset, vdev->msix.capoff, vdev->msix.caplen);
 	}
-	pr_fatal("Exit %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 
 	return ret;
 }
@@ -56,7 +54,6 @@ static int32_t vmsix_remap_entry(const struct pci_vdev *vdev, uint32_t index, bo
 	struct ptirq_msi_info info;
 	uint64_t hva;
 	int32_t ret;
-	pr_fatal("Enter %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 
 	info.is_msix = 1;
 	info.vmsi_addr.full = vdev->msix.tables[index].addr;
@@ -82,13 +79,11 @@ static int32_t vmsix_remap_entry(const struct pci_vdev *vdev, uint32_t index, bo
 		clac();
 	}
 
-	pr_fatal("Exit %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 	return ret;
 }
 
 static inline void enable_disable_msix(const struct pci_vdev *vdev, bool enable)
 {
-	pr_fatal("Enter %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 	uint32_t msgctrl;
 
 	msgctrl = pci_vdev_read_cfg(vdev, vdev->msix.capoff + PCIR_MSIX_CTRL, 2U);
@@ -98,13 +93,11 @@ static inline void enable_disable_msix(const struct pci_vdev *vdev, bool enable)
 		msgctrl &= ~PCIM_MSIXCTRL_MSIX_ENABLE;
 	}
 	pci_pdev_write_cfg(vdev->pdev->bdf, vdev->msix.capoff + PCIR_MSIX_CTRL, 2U, msgctrl);
-	pr_fatal("Exit %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 }
 
 /* Do MSI-X remap for all MSI-X table entries in the target device */
 static int32_t vmsix_remap(const struct pci_vdev *vdev, bool enable)
 {
-	pr_fatal("Enter %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 	uint32_t index;
 	int32_t ret = 0;
 
@@ -125,7 +118,6 @@ static int32_t vmsix_remap(const struct pci_vdev *vdev, bool enable)
 		}
 		enable_disable_msix(vdev, enable);
 	}
-	pr_fatal("Exit %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 
 	return ret;
 }
@@ -135,7 +127,6 @@ static int32_t vmsix_remap_one_entry(const struct pci_vdev *vdev, uint32_t index
 {
 	uint32_t msgctrl;
 	int32_t ret;
-	pr_fatal("Enter %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 
 	/* disable MSI-X during configuration */
 	enable_disable_msix(vdev, false);
@@ -153,7 +144,6 @@ static int32_t vmsix_remap_one_entry(const struct pci_vdev *vdev, uint32_t index
 			pci_pdev_write_cfg(vdev->pdev->bdf, vdev->msix.capoff + PCIR_MSIX_CTRL, 2U, msgctrl);
 		}
 	}
-	pr_fatal("Exit %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 
 	return ret;
 }
@@ -161,7 +151,6 @@ static int32_t vmsix_remap_one_entry(const struct pci_vdev *vdev, uint32_t index
 static int32_t vmsix_cfgread(const struct pci_vdev *vdev, uint32_t offset, uint32_t bytes, uint32_t *val)
 {
 	int32_t ret;
-	pr_fatal("Enter %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 	/* For PIO access, we emulate Capability Structures only */
 
 	if (msixcap_access(vdev, offset)) {
@@ -170,7 +159,6 @@ static int32_t vmsix_cfgread(const struct pci_vdev *vdev, uint32_t offset, uint3
 	} else {
 		ret = -ENODEV;
 	}
-	pr_fatal("Exit %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 
 	return ret;
 }
@@ -179,7 +167,6 @@ static int32_t vmsix_cfgwrite(struct pci_vdev *vdev, uint32_t offset, uint32_t b
 {
 	uint32_t msgctrl;
 	int32_t ret;
-	pr_fatal("Enter %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 
 	/* Writing MSI-X Capability Structure */
 	if (msixcap_access(vdev, offset)) {
@@ -206,7 +193,6 @@ static int32_t vmsix_cfgwrite(struct pci_vdev *vdev, uint32_t offset, uint32_t b
 	} else {
 		ret = -ENODEV;
 	}
-	pr_fatal("Exit %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 
 	return ret;
 }
@@ -217,7 +203,6 @@ static void vmsix_table_rw(struct pci_vdev *vdev, struct mmio_request *mmio, uin
 	uint32_t vector_control, entry_offset, table_offset, index;
 	bool message_changed = false;
 	bool unmasked;
-	pr_fatal("Enter %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 
 	/* Find out which entry it's accessing */
 	table_offset = offset - vdev->msix.table_offset;
@@ -278,7 +263,6 @@ static void vmsix_table_rw(struct pci_vdev *vdev, struct mmio_request *mmio, uin
 	} else {
 		pr_err("%s, invalid arguments %llx - %llx", __func__, mmio->value, mmio->address);
 	}
-	pr_fatal("Exit %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 
 }
 
@@ -291,7 +275,6 @@ static int32_t vmsix_table_mmio_access_handler(struct io_request *io_req, void *
 	uint64_t hva;
 
 	vdev = (struct pci_vdev *)handler_private_data;
-	pr_fatal("Enter %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 	offset = mmio->address - vdev->msix.mmio_gpa;
 
 	if (msixtable_access(vdev, (uint32_t)offset)) {
@@ -324,7 +307,6 @@ static int32_t vmsix_table_mmio_access_handler(struct io_request *io_req, void *
 			clac();
 		}
 	}
-	pr_fatal("Exit %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 
 	return ret;
 }
@@ -337,7 +319,6 @@ static int32_t vmsix_init(struct pci_vdev *vdev)
 	struct pci_pdev *pdev = vdev->pdev;
 	struct pci_bar *bar;
 	int32_t ret;
-	pr_fatal("Enter %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 
 	msix->table_bar = pdev->msix.table_bar;
 	msix->table_offset = pdev->msix.table_offset;
@@ -390,7 +371,6 @@ static int32_t vmsix_init(struct pci_vdev *vdev)
 		vdev->msix.capoff = 0U;
 	    ret = -EIO;
 	}
-	pr_fatal("Exit %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 
 	return ret;
 }
@@ -398,12 +378,10 @@ static int32_t vmsix_init(struct pci_vdev *vdev)
 static int32_t vmsix_deinit(struct pci_vdev *vdev)
 {
 	vdev->msix.intercepted_size = 0U;
-	pr_fatal("Enter %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 
 	if (vdev->msix.table_count != 0U) {
 		ptirq_remove_msix_remapping(vdev->vpci->vm, vdev->vbdf.value, vdev->msix.table_count);
 	}
-	pr_fatal("Exit %s:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", __func__, vdev->vpci, vdev->vbdf, vdev->pdev);
 
 	return 0;
 }
