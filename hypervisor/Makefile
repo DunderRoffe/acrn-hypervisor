@@ -72,7 +72,54 @@ endif
 CFLAGS += -DSTACK_PROTECTOR
 endif
 
-CFLAGS += -O1
+CFLAGS += -O0
+
+CFLAGS += -fauto-inc-dec
+CFLAGS += -fbranch-count-reg
+CFLAGS += -fcombine-stack-adjustments
+CFLAGS += -fcompare-elim
+CFLAGS += -fcprop-registers
+CFLAGS += -fdce
+CFLAGS += -fdefer-pop
+# CFLAGS += -fdelayed-branch  error: this target machine does not have delayed branches [-Werror]
+CFLAGS += -fdse
+CFLAGS += -fforward-propagate
+CFLAGS += -fguess-branch-probability
+CFLAGS += -fif-conversion
+CFLAGS += -fif-conversion2
+CFLAGS += -finline-functions-called-once
+CFLAGS += -fipa-profile
+CFLAGS += -fipa-pure-const
+CFLAGS += -fipa-reference
+# CFLAGS += -fipa-reference-addressable UNKOWN FLAG
+CFLAGS += -fmerge-constants
+CFLAGS += -fmove-loop-invariants
+CFLAGS += -fomit-frame-pointer
+CFLAGS += -freorder-blocks
+#	CFLAGS += -fshrink-wrap
+#	CFLAGS += -fshrink-wrap-separate
+#	CFLAGS += -fsplit-wide-types
+#	CFLAGS += -fssa-backprop
+#	CFLAGS += -fssa-phiopt
+#	CFLAGS += -ftree-bit-ccp
+#	CFLAGS += -ftree-ccp
+#	CFLAGS += -ftree-ch
+#	CFLAGS += -ftree-coalesce-vars
+#	CFLAGS += -ftree-copy-prop
+#	CFLAGS += -ftree-dce
+#	CFLAGS += -ftree-dominator-opts
+#	CFLAGS += -ftree-dse
+#	CFLAGS += -ftree-forwprop
+#	CFLAGS += -ftree-fre
+#	CFLAGS += -ftree-phiprop
+#	CFLAGS += -ftree-pta
+#	CFLAGS += -ftree-scev-cprop
+#	CFLAGS += -ftree-sink
+#	CFLAGS += -ftree-slsr
+#	CFLAGS += -ftree-sra
+#	CFLAGS += -ftree-ter
+#	CFLAGS += -funit-at-a-time
+
 
 ASFLAGS += -m64 -nostdinc -nostdlib
 
