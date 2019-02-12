@@ -220,8 +220,17 @@ void populate_msi_struct(struct pci_vdev *vdev)
         /* Assign MSI-X handler for configuration read and write */
         add_vdev_handler(vdev, &pci_ops_vdev_msix);
 
-        (void)memcpy_s((void *)&vdev->cfgdata.data_8[pdev->msix.capoff], pdev->msix.caplen,
-            (void *)&pdev->msix.cap[0U], pdev->msix.caplen);
+        for (int i = 0; i < 12/*pdev->msix.caplen*/; i++) {
+            vdev->cfgdata.data_8[pdev->msix.capoff + i] = pdev->msix.cap[i];
+        }
+        /*
+         * ret = memcpy_s(
+                &vdev->cfgdata.data_8[pdev->msix.capoff],
+                pdev->msix.caplen,
+                &pdev->msix.cap[0U],
+                pdev->msix.caplen
+                );
+                */
     }
     pr_fatal("After MSI-X in populate_msi_struct    vpci: 0x%x    bdf: 0x%04x", vdev->vpci, vdev->vbdf);
 }

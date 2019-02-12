@@ -72,52 +72,6 @@ endif
 CFLAGS += -DSTACK_PROTECTOR
 endif
 
-CFLAGS += -O1
-
-CFLAGS += -fno-auto-inc-dec
-CFLAGS += -fno-branch-count-reg
-CFLAGS += -fno-combine-stack-adjustments
-CFLAGS += -fno-compare-elim
-CFLAGS += -fno-cprop-registers
-CFLAGS += -fno-dce
-CFLAGS += -fno-defer-pop
-CFLAGS += -fno-delayed-branch
-CFLAGS += -fno-dse
-CFLAGS += -fno-forward-propagate
-CFLAGS += -fno-guess-branch-probability
-CFLAGS += -fno-if-conversion
-CFLAGS += -fno-if-conversion2
-CFLAGS += -fno-inline-functions-called-once
-CFLAGS += -fno-ipa-profile
-CFLAGS += -fno-ipa-pure-const
-CFLAGS += -fno-ipa-reference
-CFLAGS += -fno-merge-constants
-CFLAGS += -fno-move-loop-invariants
-CFLAGS += -fno-omit-frame-pointer
-CFLAGS += -fno-reorder-blocks
-CFLAGS += -fno-shrink-wrap
-CFLAGS += -fno-shrink-wrap-separate
-CFLAGS += -fno-split-wide-types
-CFLAGS += -fno-ssa-backprop
-CFLAGS += -fno-ssa-phiopt
-CFLAGS += -fno-tree-bit-ccp
-CFLAGS += -fno-tree-ccp
-CFLAGS += -fno-tree-ch
-CFLAGS += -fno-tree-coalesce-vars
-CFLAGS += -fno-tree-copy-prop
-CFLAGS += -fno-tree-dce
-CFLAGS += -fno-tree-dominator-opts
-CFLAGS += -fno-tree-dse
-CFLAGS += -fno-tree-forwprop
-CFLAGS += -fno-tree-fre
-CFLAGS += -fno-tree-phiprop
-CFLAGS += -fno-tree-pta
-CFLAGS += -fno-tree-scev-cprop
-CFLAGS += -fno-tree-sink
-CFLAGS += -fno-tree-slsr
-CFLAGS += -fno-tree-sra
-CFLAGS += -fno-tree-ter
-CFLAGS += -fno-unit-at-a-time
 
 
 ASFLAGS += -m64 -nostdinc -nostdlib
