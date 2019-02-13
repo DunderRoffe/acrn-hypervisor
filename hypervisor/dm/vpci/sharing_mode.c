@@ -107,6 +107,55 @@ static void sharing_mode_cfgwrite(__unused struct acrn_vpci *vpci, union pci_bdf
 	}
 }
 
+static void print_vdev(struct pci_vdev *vdev)
+{
+	uint32_t i = 0U;
+	struct pci_bar *bar;
+	pr_fatal("    vbdf: 0x%04x", vdev->vbdf);
+	pr_fatal("    pbdf: 0x%04x", vdev->pbdf);
+	pr_fatal("    pdev: 0x%016x", vdev->pdev);
+
+	// VPCI
+	pr_fatal("    vpci: address 0x%016x", vdev->vpci);
+	if (vdev->vpci) {
+		pr_fatal("          vm      0x%016x", vdev->vpci->vm);
+		pr_fatal("          addr_info:");
+		pr_fatal("              cached_bdf    0x%04x", vdev->vpci->addr_info.cached_bdf);
+		pr_fatal("              cached_reg    0x%08x", vdev->vpci->addr_info.cached_reg);
+		pr_fatal("              cached_enable %d", vdev->vpci->addr_info.cached_enable);
+	}
+
+	// PDEV
+	pr_fatal("    pdev: address 0x%016x", vdev->pdev);
+	if (vdev->pdev) {
+		// Bars
+		for (i = 0U; i < PCI_BAR_COUNT; i++) {
+			bar = &vdev->pdev->bar[i];
+			pr_fatal("        bar[%2d]: base 0x%016x, size 0x%016x, type %2d", i, bar->base, bar->size, bar->type);
+		}
+		pr_fatal("        bdf: 0x%04x", vdev->pdev->bdf);
+
+		// MSI
+		pr_fatal("        msi:  capoff         %8d", vdev->pdev->msi.capoff);
+		pr_fatal("              caplen         %8d", vdev->pdev->msi.caplen);
+		for (i = 0U; i < MSI_MAX_CAPLEN; i++) {
+			pr_fatal("              cap[%2d]     0x%08x", i, vdev->pdev->msi.cap[i]);
+		}
+		pr_fatal("");
+
+		// MSI-X
+		pr_fatal("        msix: capoff         %8d", vdev->pdev->msix.capoff);
+		pr_fatal("              caplen         %8d", vdev->pdev->msix.caplen);
+		pr_fatal("              table_bar      %8d", vdev->pdev->msix.table_bar);
+		pr_fatal("              table_offset   %8d", vdev->pdev->msix.table_offset);
+		pr_fatal("              table_count    %8d", vdev->pdev->msix.table_count);
+		for (i = 0U; i < MSIX_CAPLEN; i++) {
+			pr_fatal("              cap[%2d]      0x%08x", i, vdev->pdev->msix.cap[i]);
+		}
+		pr_fatal("");
+	}
+}
+
 static struct pci_vdev *alloc_pci_vdev(const struct acrn_vm *vm, struct pci_pdev *pdev_ref)
 {
 	struct pci_vdev *vdev = NULL;
@@ -122,7 +171,8 @@ static struct pci_vdev *alloc_pci_vdev(const struct acrn_vm *vm, struct pci_pdev
 			/* vbdf equals to pbdf otherwise remapped */
 			vdev->vbdf = pdev_ref->bdf;
 			vdev->pdev = pdev_ref;
-			pr_fatal("Allocation DONE! vpci: 0x%x    bdf: 0x%04x", vdev->vpci, vdev->vbdf);
+			pr_fatal("Allocation DONE!");
+			print_vdev(vdev);
 		} else {
 			pr_fatal("FAILED ALLOC at index %i", num_pci_vdev - 1);
 		}
@@ -140,7 +190,6 @@ static void init_vdev_for_pdev(struct pci_pdev *pdev, const void *cb_data)
 	if (vdev != NULL) {
 		populate_msi_struct(vdev);
 	}
-	pr_fatal("After call to populate_msi_struct    vpci: 0x%x    bdf: 0x%04x", vdev->vpci, vdev->vbdf);
 }
 
 static int32_t sharing_mode_vpci_init(const struct acrn_vm *vm)
@@ -162,13 +211,20 @@ static int32_t sharing_mode_vpci_init(const struct acrn_vm *vm)
 		for (i = 0U; i < num_pci_vdev; i++) {
 			vdev = &sharing_mode_vdev_array[i];
 			pr_fatal("\nInit ops for vdev idx %d", i);
-			pr_fatal("Before ops init:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", vdev->vpci, vdev->vbdf, vdev->pdev);
+			print_vdev(vdev);
+			pr_fatal("");
+
+			if (i == 23U) {
+				pr_fatal("Index 24 just before FPGA ops init:");
+				print_vdev(&sharing_mode_vdev_array[24U]);
+				pr_fatal("");
+			}
+
 			for (j = 0U; j < vdev->nr_ops; j++) {
 				if (vdev->ops[j].init != NULL) {
 					(void)vdev->ops[j].init(vdev);
 				}
 			}
-			pr_fatal("After ops init:  vpci: 0x%x    bdf: 0x%04x    pdev: 0x%x", vdev->vpci, vdev->vbdf, vdev->pdev);
 		}
 		ret = 0;
 	}
